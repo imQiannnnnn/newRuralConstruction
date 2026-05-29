@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.ruralmanagement.mapper.UserMapper">
+    <resultMap id="userMap" type="com.example.ruralmanagement.entity.User">
+        <id property="userId" column="user_id"/>
+        <result property="userName" column="user_name"/>
+        <result property="userSex" column="user_sex"/>
+        <result property="userAge" column="user_age"/>
+        <result property="userPhone" column="user_phone"/>
+        <result property="userEmail" column="user_email"/>
+        <result property="userPassword" column="user_password"/>
+        <result property="userCreateTime" column="user_create_time"/>
+        <result property="userRole" column="user_role"/>
+        <result property="userAvatarUrl" column="user_avatar_url"/>
+        <result property="userPower" column="user_power"/>
+    </resultMap>
+
+
+    <!--计算男女个数和总数-->
+    <select id="countSex" resultType="map">
+        select sum(case when u.user_sex = '男' then 1 else 0 end) AS boyCount,
+               sum(case when u.user_sex = '女' then 1 else 0 end) AS girlCount,
+               count(u.user_sex)                                 AS sumCount
+        from tb_user u
+    </select>
+
+
+    <select id="countAge" resultType="map">
+        select case
+                   when u.user_age between 0 and 20 then '20岁以下'
+                   when u.user_age between 20 and 30 then '20岁--30岁'
+                   when u.user_age between 30 and 40 then '30岁--40岁'
+                   when u.user_age between 40 and 50 then '40岁--50岁'
+                   when u.user_age between 50 and 60 then '50岁--60岁'
+                   when u.user_age between 60 and 150 then '60岁以上'
+                   end  as "name",
+               count(*) as "value"
+        from tb_user u
+        group by case
+                     when u.user_age between 0 and 20 then '20岁以下'
+                     when u.user_age between 20 and 30 then '20岁--30岁'
+                     when u.user_age between 30 and 40 then '30岁--40岁'
+                     when u.user_age between 40 and 50 then '40岁--50岁'
+                     when u.user_age between 50 and 60 then '50岁--60岁'
+                     when u.user_age between 60 and 150 then '60岁以上'
+                     end
+        order by name
+    </select>
+</mapper>

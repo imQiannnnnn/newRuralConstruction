@@ -1,0 +1,52 @@
+server:
+  port: 8888
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/rural_manage_system?useUnicode=true&characterEncoding=utf-8
+    username: root
+    password: 123456
+
+  servlet:
+    multipart:
+      max-file-size: 10MB     #单个文件最大限制
+      max-request-size: 50MB  #多个文件最大限制
+
+
+  #日期
+  mvc:
+    format:
+      date: yyyy-MM-dd HH:mm:ss
+
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+  #jason 传出的日期格式
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    default-property-inclusion: non_null
+    time-zone: GMT+8
+
+
+logging:
+  level:
+    com.baomidou.mybatisplus.samples.quickstart: debug
+
+# 整合mybatis
+mybatis:
+  # 加载实体类所在的包路径
+  type-aliases-package: com.example.ruralmanagement.domain
+  # 加载映射文件
+  mapper-locations: mapper/*Mapper.xml
+  # 把日志输出到控制台
+#  configuration:
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+files:
+  upload:
+    path: F:/IDEA_project/newRuralConstruction/files/

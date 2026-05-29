@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.ruralmanagement.mapper.WishMapper">
+
+    <resultMap id="User" type="com.example.ruralmanagement.entity.User">
+        <id property="userId" column="user_id"/>
+        <result property="userName" column="user_name"/>
+        <result property="userSex" column="user_sex"/>
+        <result property="userAge" column="user_age"/>
+        <result property="userPhone" column="user_phone"/>
+        <result property="userEmail" column="user_email"/>
+        <result property="userCreateTime" column="user_create_time"/>
+        <result property="userRole" column="user_role"/>
+        <result property="userAvatarUrl" column="user_avatar_url"/>
+    </resultMap>
+
+    <select id="selectUser" resultMap="User">
+        select *
+        from tb_user u
+        where u.user_id = #{user_id}
+    </select>
+
+    <resultMap id="wishMap" type="com.example.ruralmanagement.entity.Wish">
+        <id property="wishId" column="wish_id"/>
+        <result property="wishName" column="wish_name"/>
+        <result property="wishDescribe" column="wish_describe"/>
+        <result property="wishCreateTime" column="wish_create_time"/>
+        <result property="wishFinishTime" column="wish_finish_time"/>
+        <result property="wishFeedback" column="wish_feedback"/>
+        <result property="wishScore" column="wish_score"/>
+        <result property="wishActive" column="wish_active"/>
+        <association property="userCreate" column="user_create_id" select="selectUser"
+                     javaType="com.example.ruralmanagement.entity.User"/>
+        <association property="userFinish" column="user_finish_id" select="selectUser"
+                     javaType="com.example.ruralmanagement.entity.User"/>
+    </resultMap>
+
+
+    <!--联表查询 + 模糊查询 + 条件查询-->
+    <select id="queryAll" resultMap="com.example.ruralmanagement.mapper.WishMapper.wishMap">
+        select * from tb_wish w
+        where 1=1
+        <if test="map.wish_id!=null">
+            and w.wish_id = #{map.wish_id}
+        </if>
+        <if test="map.wish_name!=null and map.wish_name!=''">
+            and w.wish_name = #{map.wish_name}
+        </if>
+        order by w.wish_id desc
+    </select>
+
+    <select id="queryList" resultMap="com.example.ruralmanagement.mapper.WishMapper.wishMap">
+        select * from tb_wish w
+        where 1=1
+        <if test="map.user_create_id!=null">
+            and w.user_create_id = #{map.user_create_id}
+        </if>
+    </select>
+
+    <select id="queryByMouth" resultType="map">
+        select DATE_FORMAT(w.wish_finish_time, '%m') months, avg(w.wish_score) as 'avg', count(*) as 'num'
+        from tb_wish w
+        where 1=1
+        <if test="map.user_finish_id!=null">
+            and w.user_finish_id = #{map.user_finish_id}
+        </if>
+        <if test="map.year!=null">
+            and DATE_FORMAT(w.wish_finish_time, '%Y') = #{map.year}
+        </if>
+        group by months order by months
+    </select>
+
+    <select id="getYearList" resultType="integer">
+        select distinct DATE_FORMAT(w.wish_finish_time, '%Y') years from tb_wish w
+    </select>
+
+</mapper>

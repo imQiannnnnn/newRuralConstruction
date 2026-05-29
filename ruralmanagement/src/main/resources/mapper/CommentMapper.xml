@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.ruralmanagement.mapper.CommentMapper">
+    <!--评论用户id + 父级用户id + 回复用户id-->
+    <resultMap id="User" type="com.example.ruralmanagement.entity.User">
+        <id property="userId" column="user_id"/>
+        <result property="userName" column="user_name"/>
+        <result property="userSex" column="user_sex"/>
+        <result property="userAge" column="user_age"/>
+        <result property="userPhone" column="user_phone"/>
+        <result property="userEmail" column="user_email"/>
+        <result property="userCreateTime" column="user_create_time"/>
+        <result property="userRole" column="user_role"/>
+        <result property="userAvatarUrl" column="user_avatar_url"/>
+    </resultMap>
+
+    <select id="selectUser" resultMap="User">
+        select *
+        from tb_user u
+        where u.user_id = #{user_id}
+    </select>
+
+    <!--文章-旅游景点id-->
+    <resultMap id="Scene" type="com.example.ruralmanagement.entity.Scene">
+        <id property="sceneId" column="scene_id"/>
+        <result property="sceneName" column="scene_name"/>
+        <result property="sceneDescribe" column="scene_describe"/>
+        <result property="sceneImage" column="scene_image"/>
+        <result property="sceneAddress" column="scene_address"/>
+        <result property="scenePrice" column="scene_price"/>
+        <result property="scenePolicies" column="scene_policies"/>
+        <result property="sceneServiceFacility" column="scene_service_facility"/>
+    </resultMap>
+
+    <select id="selectScene" resultMap="Scene">
+        select *
+        from tb_scene s
+        where s.scene_id = #{scene_id}
+    </select>
+
+    <resultMap id="commentMap" type="com.example.ruralmanagement.entity.Comment">
+        <id property="commentId" column="comment_id"/>
+        <result property="commentContent" column="comment_content"/>
+        <result property="commentCreateTime" column="comment_create_time"/>
+        <result property="commentParentId" column="comment_parent_id"/>
+        <result property="commentFromUid" column="comment_from_uid"/>
+        <result property="commentToUid" column="comment_to_uid"/>
+        <association property="scene" column="comment_article_id" select="selectScene"
+                     javaType="com.example.ruralmanagement.entity.Scene"/>
+        <association property="commentFromUser" column="comment_from_uid" select="selectUser"
+                     javaType="com.example.ruralmanagement.entity.User"/>
+        <association property="commentToUser" column="comment_to_uid" select="selectUser"
+                     javaType="com.example.ruralmanagement.entity.User"/>
+        <collection property="children" column="comment_parent_id" select="selectChildren"/>
+    </resultMap>
+
+    <select id="selectChildren" resultMap="commentMap">
+        select * from tb_comment c
+        where  c.comment_id = #{comment_parent_id}
+    </select>
+
+    <!--联表查询 返回List-->
+    <select id="queryAll" resultMap="com.example.ruralmanagement.mapper.CommentMapper.commentMap">
+        select * from tb_comment c
+        where 1=1
+        <if test="map.comment_article_id!=null">
+            and c.comment_article_id = #{map.comment_article_id}
+        </if>
+        order by c.comment_id desc
+    </select>
+
+    <!--联表查询 分页 返回Page-->
+    <select id="queryByPage" resultMap="com.example.ruralmanagement.mapper.CommentMapper.commentMap">
+        select * from tb_comment c
+        where 1=1
+        <if test="map.comment_article_id!=null">
+            and c.comment_article_id = #{map.comment_article_id}
+        </if>
+        order by c.comment_id desc
+    </select>
+
+</mapper>

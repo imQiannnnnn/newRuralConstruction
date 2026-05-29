@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.ruralmanagement.mapper.PurchaseMapper">
+
+    <!--买方User-->
+    <!--卖方User 也就是农产品Produce的外键-->
+    <resultMap id="User" type="com.example.ruralmanagement.entity.User">
+        <id property="userId" column="user_id"/>
+        <result property="userName" column="user_name"/>
+        <result property="userSex" column="user_sex"/>
+        <result property="userAge" column="user_age"/>
+        <result property="userPhone" column="user_phone"/>
+        <result property="userEmail" column="user_email"/>
+        <result property="userCreateTime" column="user_create_time"/>
+        <result property="userRole" column="user_role"/>
+        <result property="userAvatarUrl" column="user_avatar_url"/>
+    </resultMap>
+
+    <!--通过Purchase里面的userId查找对应的User-->
+    <!--通过Produce里面的userId查找到对应的User-->
+    <select id="selectUser" resultMap="User">
+        select *
+        from tb_user u
+        where u.user_id = #{user_id}
+    </select>
+
+    <!--购买的农产品-->
+    <resultMap id="Produce" type="com.example.ruralmanagement.entity.Produce">
+        <id property="produceId" column="produce_id"/>
+        <result property="produceName" column="produce_name"/>
+        <result property="produceDescribe" column="produce_describe"/>
+        <result property="producePrice" column="produce_price"/>
+        <result property="produceImage" column="produce_image"/>
+        <result property="produceCreateTime" column="produce_create_time"/>
+        <association property="user" column="user_id" select="selectUser"
+                     javaType="com.example.ruralmanagement.entity.User"/>
+    </resultMap>
+
+    <!--通过Purchase里面的produceId查找对应的Produce-->
+    <select id="selectProduce" resultMap="Produce">
+        select *
+        from tb_produce p
+        where p.produce_id = #{produce_id}
+    </select>
+
+    <resultMap id="purchaseMap" type="com.example.ruralmanagement.entity.Purchase">
+        <id property="purchaseId" column="purchase_id"/>
+        <result property="purchaseNum" column="purchase_num"/>
+        <result property="purchaseTotalPrice" column="purchase_total_price"/>
+        <result property="purchaseAddress" column="purchase_address"/>
+        <result property="purchaseRemark" column="purchase_remark"/>
+        <result property="purchaseActive" column="purchase_active"/>
+        <result property="purchaseTime" column="purchase_time"/>
+        <result property="purchaseDelivery" column="purchase_delivery"/>
+        <result property="purchaseReceipt" column="purchase_receipt"/>
+        <association property="user" column="purchase_buyer_id" select="selectUser"
+                     javaType="com.example.ruralmanagement.entity.User"/>
+        <association property="produce" column="purchase_produce_id" select="selectProduce"
+                     javaType="com.example.ruralmanagement.entity.Produce"/>
+    </resultMap>
+
+
+    <!--分页 联表查询 + 条件查询-->
+    <select id="queryAllPage" resultMap="com.example.ruralmanagement.mapper.PurchaseMapper.purchaseMap">
+        select * from tb_purchase p
+        where 1=1
+        <if test="map.purchase_id!=null">
+            and p.purchase_id = #{map.purchase_id}
+        </if>
+        <if test="map.purchase_active!=null">
+            and p.purchase_active = #{map.purchase_active}
+        </if>
+        <if test="map.purchase_delivery!=null">
+            and p.purchase_delivery = #{map.purchase_delivery}
+        </if>
+        <if test="map.purchase_receipt!=null">
+            and p.purchase_receipt = #{map.purchase_receipt}
+        </if>
+        <if test="map.purchase_buyer_id!=null">
+            and p.purchase_buyer_id = #{map.purchase_buyer_id}
+        </if>
+        order by p.purchase_id desc
+    </select>
+
+
+    <!--判断查询是否已加入购物车【produceId + userId 两键一起在表中已存在不用再加入购物车】-->
+    <select id="ifGetPurchase" resultType="boolean">
+        select exists(select *
+                      from tb_purchase p
+                      where p.purchase_produce_id = #{map.purchase_produce_id}
+                        and p.purchase_buyer_id = #{map.purchase_buyer_id})
+    </select>
+
+</mapper>
